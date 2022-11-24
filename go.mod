@@ -5,6 +5,7 @@ go 1.19
 require (
 	github.com/go-chi/chi/v5 v5.0.7
 	github.com/go-chi/jwtauth/v5 v5.1.0
+	github.com/jackc/pgx-shopspring-decimal v0.0.0-20220624020537-1d36b5a1853e
 	github.com/jackc/pgx/v5 v5.1.1
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/sarulabs/di/v2 v2.4.2

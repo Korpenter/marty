@@ -28,7 +28,7 @@ func NewRouter() chi.Router {
 	r.Group(func(r chi.Router) {
 		r.Use(jwtauth.Verifier(tokenAuth))
 		r.Use(jwtauth.Authenticator)
-		//r.Get("/api/user/orders", )
+		r.Get("/api/user/orders", handlers.UserOrders)
 		//r.Get("/api/user/balance", )
 		//r.Get("/api/user/balance/withdrawals", )
 

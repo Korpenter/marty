@@ -13,8 +13,7 @@ type Repository interface {
 	CreateUser(ctx context.Context, user *models.Authorization) error
 	GetHashedPasswordByLogin(ctx context.Context, login string) (string, error)
 	AddOrder(ctx context.Context, order *models.Order) error
-	GetOrder(ctx context.Context, id string) (*models.Order, error)
-	GetOrdersByUser(ctx context.Context, userID string) ([]*models.Order, error)
+	GetOrdersByUser(ctx context.Context, userID string) ([]models.OrderItem, error)
 	UpdateOrder(ctx context.Context, order *models.Order) error
 	Ping(ctx context.Context) error
 	DeleteRepo(ctx context.Context) error

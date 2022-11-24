@@ -7,9 +7,16 @@ import (
 
 type Order struct {
 	Login   string
-	Status  string          `json:"status"`
-	Accrual decimal.Decimal `json:"accrual,omitempty"`
-	OrderID string          `json:"order"`
+	Status  string           `json:"status"`
+	Accrual *decimal.Decimal `json:"accrual,omitempty"`
+	OrderID string           `json:"order"`
+}
+
+type OrderItem struct {
+	OrderID  string           `json:"number"`
+	Status   string           `json:"status"`
+	Accrual  *decimal.Decimal `json:"accrual,omitempty"`
+	Uploaded time.Time        `json:"uploaded_at"`
 }
 
 type Authorization struct {
@@ -18,9 +25,9 @@ type Authorization struct {
 }
 
 type Withdrawal struct {
-	OrderID   string          `json:"order"`
-	Sum       decimal.Decimal `json:"sum"`
-	Processed time.Time       `json:"processed_at"`
+	OrderID   string           `json:"order"`
+	Sum       *decimal.Decimal `json:"sum"`
+	Processed time.Time        `json:"processed_at"`
 }
 
 type Balance struct {

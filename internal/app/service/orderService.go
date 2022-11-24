@@ -16,7 +16,7 @@ import (
 type OrderService interface {
 	GetAccrual(order *models.Order)
 	AddOrder(ctx context.Context, order *models.Order) error
-	GetOrder(ctx context.Context, order *models.Order) error
+	GetOrdersByUser(ctx context.Context, login string) ([]models.OrderItem, error)
 	PollAccrual()
 }
 
@@ -37,7 +37,7 @@ func NewOrderService(c *config.Config, repo storage.Repository) OrderService {
 		updateQueue:  make(chan *models.Order, 1000),
 		accrualQueue: make(chan *models.Order, 1000),
 		httpClient:   http.Client{},
-		accrual:      fmt.Sprintf("http://%s/api/orders/", c.AccrualAddress),
+		accrual:      fmt.Sprintf("%s/api/orders/", c.AccrualAddress),
 		Queue:        make(chan *models.Order, 1000),
 	}
 }
@@ -97,8 +97,12 @@ func (s *OrderServiceImpl) GetAccrual(order *models.Order) {
 	s.accrualQueue <- order
 }
 
-func (s *OrderServiceImpl) GetOrder(ctx context.Context, order *models.Order) error {
-	return nil
+func (s *OrderServiceImpl) GetOrdersByUser(ctx context.Context, login string) ([]models.OrderItem, error) {
+	orders, err := s.repo.GetOrdersByUser(ctx, login)
+	if err != nil {
+		return nil, err
+	}
+	return orders, nil
 }
 
 func (s *OrderServiceImpl) updateOrders(ctx context.Context) {

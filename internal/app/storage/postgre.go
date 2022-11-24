@@ -6,8 +6,10 @@ import (
 	"fmt"
 	"github.com/Mldlr/marty/internal/app/constant"
 	"github.com/Mldlr/marty/internal/app/models"
+	pgxdecimal "github.com/jackc/pgx-shopspring-decimal"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/shopspring/decimal"
 	"sync"
 )
 
@@ -20,6 +22,10 @@ func NewPostgresRepo(connString string) (*PostgresRepo, error) {
 	poolConfig, err := pgxpool.ParseConfig(connString)
 	if err != nil {
 		return nil, err
+	}
+	poolConfig.AfterConnect = func(ctx context.Context, conn *pgx.Conn) error {
+		pgxdecimal.Register(conn.TypeMap())
+		return nil
 	}
 	conn, err := pgxpool.NewWithConfig(context.Background(), poolConfig)
 	if err != nil {
@@ -109,11 +115,28 @@ func (r *PostgresRepo) AddOrder(ctx context.Context, order *models.Order) error 
 	return nil
 }
 
-func (r *PostgresRepo) GetOrder(ctx context.Context, id string) (*models.Order, error) {
-	return nil, nil
-}
-func (r *PostgresRepo) GetOrdersByUser(ctx context.Context, userID string) ([]*models.Order, error) {
-	return nil, nil
+func (r *PostgresRepo) GetOrdersByUser(ctx context.Context, login string) ([]models.OrderItem, error) {
+	var order models.OrderItem
+	orders := make([]models.OrderItem, 0)
+	rows, err := r.conn.Query(ctx, getOrdersByUser, login)
+	if err != nil {
+		return nil, err
+	}
+	if rows.Err() != nil {
+		return nil, rows.Err()
+	}
+	defer rows.Close()
+	for rows.Next() {
+		err = rows.Scan(&order.OrderID, &order.Status, &order.Accrual, &order.Uploaded)
+		if err != nil {
+			return nil, err
+		}
+		if order.Accrual.Cmp(decimal.Zero) == 0 {
+			order.Accrual = nil
+		}
+		orders = append(orders, order)
+	}
+	return orders, nil
 }
 
 func (r *PostgresRepo) UpdateOrder(ctx context.Context, order *models.Order) error {

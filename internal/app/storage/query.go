@@ -9,8 +9,8 @@ const (
 	createOrders = `CREATE TABLE IF NOT EXISTS orders (
     			id text PRIMARY KEY,
     			user_login varchar(32) NOT NULL,
-        		created_at timestamp DEFAULT CURRENT_TIMESTAMP,
-    			accrual numeric(10,2),
+        		uploaded_at timestamp DEFAULT CURRENT_TIMESTAMP,
+    			accrual numeric(10,2) DEFAULT 0,
     			status varchar(10) DEFAULT 'NEW' CHECK (status in ('NEW', 'REGISTERED', 'PROCESSING', 'PROCESSED', 'INVALID')),
     			FOREIGN KEY(user_login) REFERENCES users(login)
                 )`
@@ -18,7 +18,8 @@ const (
     			id text PRIMARY KEY,
 				accrual numeric(10,2),
     			user_login varchar(32),
-				processed_at timestamp DEFAULT CURRENT_TIMESTAMP
+				processed_at timestamp DEFAULT CURRENT_TIMESTAMP,
+    			FOREIGN KEY(user_login) REFERENCES users(login)
 				)`
 	createUser = `
 	INSERT INTO users (login, password)
@@ -30,9 +31,11 @@ const (
 				      VALUES($1, $2)
 					  ON CONFLICT DO NOTHING`
 	getOrderUserid       = `SELECT user_login FROM orders WHERE id = $1`
+	getOrdersByUser      = `SELECT id, status, accrual, uploaded_at FROM orders WHERE user_login=$1`
 	updateOrder          = `UPDATE orders SET status=$1 WHERE id=$2`
-	updateProcessedOrder = `UPDATE orders SET status=$1, accrual=$2 WHERE id=$3`
-	dropTables           = `DROP TABLE withdrawals
+	updateProcessedOrder = `UPDATE orders SET status=$1, accrual=$2 WHERE id=$3;
+							UPDATE users SET balance=balance+$2`
+	dropTables = `DROP TABLE withdrawals
 							DROP TABLE orders
 				  			DROP TABLE users`
 )

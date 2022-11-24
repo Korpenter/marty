@@ -14,9 +14,9 @@ import (
 type UserService interface {
 	CreateUser(ctx context.Context, user *models.Authorization) error
 	LogInUser(ctx context.Context, user *models.Authorization) (bool, error)
+	MakeToken(login string) string
 	hashPassword(password string) string
 	checkPasswordHash(pass string, hash string) bool
-	MakeToken(login string) string
 }
 
 type UserServiceImpl struct {
