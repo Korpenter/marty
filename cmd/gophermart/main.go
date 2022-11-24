@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"github.com/Mldlr/marty/internal/app/config"
 	"github.com/Mldlr/marty/internal/app/container"
 	"github.com/Mldlr/marty/internal/app/router"
@@ -22,6 +23,7 @@ func main() {
 	}
 	orderService := service.NewOrderService(cfg, repo)
 	go orderService.PollAccrual()
+	go orderService.UpdateOrders(context.Background())
 	container.BuildContainer(cfg, repo, userService, orderService)
 	r := router.NewRouter()
 	log.Printf("starting with cfg: %v", cfg)

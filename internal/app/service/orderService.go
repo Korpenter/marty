@@ -17,6 +17,7 @@ type OrderService interface {
 	GetAccrual(order *models.Order)
 	AddOrder(ctx context.Context, order *models.Order) error
 	GetOrdersByUser(ctx context.Context, login string) ([]models.OrderItem, error)
+	UpdateOrders(ctx context.Context)
 	PollAccrual()
 }
 
@@ -105,7 +106,7 @@ func (s *OrderServiceImpl) GetOrdersByUser(ctx context.Context, login string) ([
 	return orders, nil
 }
 
-func (s *OrderServiceImpl) updateOrders(ctx context.Context) {
+func (s *OrderServiceImpl) UpdateOrders(ctx context.Context) {
 	for {
 		order := <-s.updateQueue
 		err := s.repo.UpdateOrder(ctx, order)
