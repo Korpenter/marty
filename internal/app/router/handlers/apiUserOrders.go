@@ -25,6 +25,7 @@ func UserOrders(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusNoContent)
 		return
 	}
+	w.Header().Set("Content-Type", "application/json")
 	if err = json.NewEncoder(w).Encode(orderItems); err != nil {
 		http.Error(w, "error building the response", http.StatusInternalServerError)
 		return
