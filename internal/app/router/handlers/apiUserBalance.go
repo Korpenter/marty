@@ -26,5 +26,6 @@ func UserBalance(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "error building the response", http.StatusInternalServerError)
 		return
 	}
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 }

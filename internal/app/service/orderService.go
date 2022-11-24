@@ -81,6 +81,7 @@ func (s *OrderServiceImpl) getAccrual(order *models.Order) (*models.Order, int, 
 		return nil, 0, fmt.Errorf("error decoding json: %s", err)
 	}
 	defer r.Body.Close()
+	log.Println(gotOrder)
 	return &gotOrder, 0, nil
 }
 
