@@ -2,11 +2,11 @@ package service
 
 import (
 	"context"
-	"github.com/Mldlr/mart/marty/internal/app/config"
-	"github.com/Mldlr/mart/marty/internal/app/constant"
-	"github.com/Mldlr/mart/marty/internal/app/models"
-	"github.com/Mldlr/mart/marty/internal/app/storage"
-	"github.com/Mldlr/mart/marty/internal/util/validators"
+	"github.com/Mldlr/marty/internal/app/config"
+	"github.com/Mldlr/marty/internal/app/constant"
+	"github.com/Mldlr/marty/internal/app/models"
+	"github.com/Mldlr/marty/internal/app/storage"
+	"github.com/Mldlr/marty/internal/util/validators"
 	"github.com/go-chi/jwtauth/v5"
 	"golang.org/x/crypto/bcrypt"
 )

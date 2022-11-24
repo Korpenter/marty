@@ -2,7 +2,7 @@ package validators
 
 import (
 	"fmt"
-	"github.com/Mldlr/mart/marty/internal/app/models"
+	"github.com/Mldlr/marty/internal/app/models"
 )
 
 func ValidateAuthorization(user *models.Authorization) error {

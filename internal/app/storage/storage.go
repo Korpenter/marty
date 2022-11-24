@@ -3,9 +3,9 @@ package storage
 import (
 	"context"
 	"fmt"
-	"github.com/Mldlr/mart/marty/internal/app/config"
-	"github.com/Mldlr/mart/marty/internal/app/constant"
-	"github.com/Mldlr/mart/marty/internal/app/models"
+	"github.com/Mldlr/marty/internal/app/config"
+	"github.com/Mldlr/marty/internal/app/constant"
+	"github.com/Mldlr/marty/internal/app/models"
 	"log"
 )
 
