@@ -9,11 +9,15 @@ import (
 	"github.com/Mldlr/marty/internal/util/validators"
 	"github.com/go-chi/jwtauth/v5"
 	"golang.org/x/crypto/bcrypt"
+	"log"
 )
 
 type UserService interface {
 	CreateUser(ctx context.Context, user *models.Authorization) error
 	LogInUser(ctx context.Context, user *models.Authorization) (bool, error)
+	GetBalance(ctx context.Context, login string) (*models.Balance, error)
+	GetWithdrawals(ctx context.Context, login string) ([]models.Withdrawal, error)
+	Withdraw(ctx context.Context, withdrawal *models.Withdrawal) error
 	MakeToken(login string) string
 	hashPassword(password string) string
 	checkPasswordHash(pass string, hash string) bool
@@ -57,6 +61,33 @@ func (s *UserServiceImpl) LogInUser(ctx context.Context, user *models.Authorizat
 		return false, constant.ErrWrongPassword
 	}
 	return true, nil
+}
+
+func (s *UserServiceImpl) GetBalance(ctx context.Context, login string) (*models.Balance, error) {
+	balance, err := s.repo.GetBalance(ctx, login)
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+	return balance, nil
+}
+
+func (s *UserServiceImpl) GetWithdrawals(ctx context.Context, login string) ([]models.Withdrawal, error) {
+	withdrawals, err := s.repo.GetWithdrawals(ctx, login)
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+	return withdrawals, nil
+}
+
+func (s *UserServiceImpl) Withdraw(ctx context.Context, withdrawal *models.Withdrawal) error {
+	err := s.repo.Withdraw(ctx, withdrawal)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+	return nil
 }
 
 func (s *UserServiceImpl) MakeToken(login string) string {

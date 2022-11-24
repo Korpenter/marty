@@ -29,8 +29,8 @@ func NewRouter() chi.Router {
 		r.Use(jwtauth.Verifier(tokenAuth))
 		r.Use(jwtauth.Authenticator)
 		r.Get("/api/user/orders", handlers.UserOrders)
-		//r.Get("/api/user/balance", )
-		//r.Get("/api/user/balance/withdrawals", )
+		r.Get("/api/user/balance", handlers.UserBalance)
+		r.Get("/api/user/balance/withdrawals", handlers.UserWithdrawals)
 
 		r.Group(func(r chi.Router) {
 			r.Use(chiMiddleware.AllowContentType("text/plain"))
@@ -39,7 +39,7 @@ func NewRouter() chi.Router {
 
 		r.Group(func(r chi.Router) {
 			r.Use(chiMiddleware.AllowContentType("application/json"))
-			//r.Post("/api/user/balance/withdraw", )
+			r.Post("/api/user/balance/withdraw", handlers.UserWithdraw)
 		})
 	})
 	return r

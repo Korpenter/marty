@@ -25,12 +25,13 @@ type Authorization struct {
 }
 
 type Withdrawal struct {
+	Login     string
 	OrderID   string           `json:"order"`
 	Sum       *decimal.Decimal `json:"sum"`
 	Processed time.Time        `json:"processed_at"`
 }
 
 type Balance struct {
-	Current   string `json:"current"`
-	Withdrawn string `json:"withdrawn"`
+	Current   *decimal.Decimal `json:"current"`
+	Withdrawn *decimal.Decimal `json:"withdrawn"`
 }

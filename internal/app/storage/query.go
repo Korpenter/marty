@@ -15,7 +15,8 @@ const (
     			FOREIGN KEY(user_login) REFERENCES users(login)
                 )`
 	createWithdrawals = `CREATE TABLE IF NOT EXISTS withdrawals (
-    			id text PRIMARY KEY,
+    			id SERIAL PRIMARY KEY,
+    			order text,
 				accrual numeric(10,2),
     			user_login varchar(32),
 				processed_at timestamp DEFAULT CURRENT_TIMESTAMP,
@@ -30,12 +31,19 @@ const (
 	addOrder       = `INSERT INTO orders (id, user_login)
 				      VALUES($1, $2)
 					  ON CONFLICT DO NOTHING`
-	getOrderUserid       = `SELECT user_login FROM orders WHERE id = $1`
-	getOrdersByUser      = `SELECT id, status, accrual, uploaded_at FROM orders WHERE user_login=$1`
+	getOrderUserid  = `SELECT user_login FROM orders WHERE id = $1`
+	getOrdersByUser = `SELECT id, status, accrual, uploaded_at FROM orders WHERE user_login=$1`
+	getUserBalance  = `SELECT balance, sum(accrual)
+					   FROM users u  LEFT JOIN withdrawals w ON w.user_login = u.login
+					   WHERE user_login = $1 GROUP BY user_login, balance`
+	getUserWithdrawals   = `SELECT order, accrual, processed_at FROM withdrawals WHERE user_login=$1`
 	updateOrder          = `UPDATE orders SET status=$1 WHERE id=$2`
 	updateProcessedOrder = `UPDATE orders SET status=$1, accrual=$2 WHERE id=$3;
 							UPDATE users SET balance=balance+$2`
+	userVerifyBalance = `UPDATE users SET balance=balance-$2 WHERE balance>$2 AND login=$1`
+	userWithdraw      = `INSERT INTO withdrawals (order, accrual, user_login)
+						 VALUES $1, $2, $3`
 	dropTables = `DROP TABLE withdrawals
-							DROP TABLE orders
-				  			DROP TABLE users`
+				  DROP TABLE orders
+				  DROP TABLE users`
 )

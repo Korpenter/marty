@@ -10,6 +10,7 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/shopspring/decimal"
+	"log"
 	"sync"
 )
 
@@ -137,6 +138,63 @@ func (r *PostgresRepo) GetOrdersByUser(ctx context.Context, login string) ([]mod
 		orders = append(orders, order)
 	}
 	return orders, nil
+}
+
+func (r *PostgresRepo) GetBalance(ctx context.Context, login string) (*models.Balance, error) {
+	var balance models.Balance
+	err := r.conn.QueryRow(ctx, getUserBalance, login).Scan(&balance.Current, &balance.Withdrawn)
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+	return &balance, nil
+}
+
+func (r *PostgresRepo) GetWithdrawals(ctx context.Context, login string) ([]models.Withdrawal, error) {
+	var withdrawal models.Withdrawal
+	withdrawals := make([]models.Withdrawal, 0)
+	rows, err := r.conn.Query(ctx, getUserWithdrawals, login)
+	if err != nil {
+		return nil, err
+	}
+	if rows.Err() != nil {
+		return nil, rows.Err()
+	}
+	defer rows.Close()
+	for rows.Next() {
+		err = rows.Scan(&withdrawal.OrderID, &withdrawal.Sum, &withdrawal.Processed)
+		if err != nil {
+			return nil, err
+		}
+		withdrawals = append(withdrawals, withdrawal)
+	}
+	return withdrawals, nil
+}
+
+func (r *PostgresRepo) Withdraw(ctx context.Context, withdrawal *models.Withdrawal) error {
+	tx, err := r.conn.Begin(ctx)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if err != nil {
+			tx.Rollback(ctx)
+		} else {
+			tx.Commit(ctx)
+		}
+	}()
+	commandTag, err := tx.Exec(ctx, userVerifyBalance, withdrawal.Login, withdrawal.Sum)
+	if err != nil {
+		return err
+	}
+	if commandTag.RowsAffected() != 1 {
+		return constant.ErrInsufficientBalance
+	}
+	commandTag, err = tx.Exec(ctx, userWithdraw, withdrawal.OrderID, withdrawal.Sum, withdrawal.Login)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (r *PostgresRepo) UpdateOrder(ctx context.Context, order *models.Order) error {

@@ -15,6 +15,9 @@ type Repository interface {
 	AddOrder(ctx context.Context, order *models.Order) error
 	GetOrdersByUser(ctx context.Context, userID string) ([]models.OrderItem, error)
 	UpdateOrder(ctx context.Context, order *models.Order) error
+	GetBalance(ctx context.Context, login string) (*models.Balance, error)
+	GetWithdrawals(ctx context.Context, login string) ([]models.Withdrawal, error)
+	Withdraw(ctx context.Context, withdrawal *models.Withdrawal) error
 	Ping(ctx context.Context) error
 	DeleteRepo(ctx context.Context) error
 }
