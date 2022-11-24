@@ -54,7 +54,7 @@ func (s *OrderServiceImpl) PollAccrual() {
 		}
 		if gotOrder.Status != order.Status {
 			order.Status = gotOrder.Status
-			s.updateQueue <- order
+			s.updateQueue <- gotOrder
 		}
 		if order.Status == "PROCESSING" || order.Status == "REGISTERED" || order.Status == "" {
 			s.accrualQueue <- order
@@ -81,7 +81,6 @@ func (s *OrderServiceImpl) getAccrual(order *models.Order) (*models.Order, int, 
 		return nil, 0, fmt.Errorf("error decoding json: %s", err)
 	}
 	defer r.Body.Close()
-	log.Println(gotOrder)
 	return &gotOrder, 0, nil
 }
 
