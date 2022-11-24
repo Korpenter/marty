@@ -190,7 +190,7 @@ func (r *PostgresRepo) Withdraw(ctx context.Context, withdrawal *models.Withdraw
 	if commandTag.RowsAffected() != 1 {
 		return constant.ErrInsufficientBalance
 	}
-	commandTag, err = tx.Exec(ctx, userWithdraw, withdrawal.OrderID, withdrawal.Sum, withdrawal.Login)
+	_, err = tx.Exec(ctx, userWithdraw, withdrawal.OrderID, withdrawal.Sum, withdrawal.Login)
 	if err != nil {
 		return err
 	}
