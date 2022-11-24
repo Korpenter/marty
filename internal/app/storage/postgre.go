@@ -210,8 +210,11 @@ func (r *PostgresRepo) UpdateOrder(ctx context.Context, order *models.Order) err
 		}
 	}()
 	if order.Status == "PROCESSED" {
+
 		_, err = tx.Exec(ctx, updateProcessedOrder, order.Status, order.Accrual, order.OrderID)
+		log.Println("Processed order")
 		if err != nil {
+			log.Println("Error after Processed order")
 			return err
 		}
 		_, err = tx.Exec(ctx, updateBalance, order.Accrual, order.Login)

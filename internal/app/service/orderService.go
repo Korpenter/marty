@@ -48,7 +48,7 @@ func (s *OrderServiceImpl) PollAccrual() {
 		order := <-s.accrualQueue
 		gotOrder, retryAfter, err := s.getAccrual(order)
 		if err != nil {
-			log.Println(err)
+			//log.Println(err)
 			s.accrualQueue <- order
 			time.Sleep(time.Duration(retryAfter) * time.Second)
 			continue
@@ -65,7 +65,7 @@ func (s *OrderServiceImpl) PollAccrual() {
 
 func (s *OrderServiceImpl) getAccrual(order *models.Order) (*models.Order, int, error) {
 	r, err := s.httpClient.Get(s.accrual + order.OrderID)
-	log.Println("getting accrual")
+	//log.Println("getting accrual")
 	if err != nil {
 		return nil, 0, err
 	}
