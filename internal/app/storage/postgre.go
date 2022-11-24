@@ -214,7 +214,7 @@ func (r *PostgresRepo) UpdateOrder(ctx context.Context, order *models.Order) err
 		if err != nil {
 			return err
 		}
-		_, err = tx.Exec(ctx, updateBalance, order.Status, order.Accrual, order.OrderID)
+		_, err = tx.Exec(ctx, updateBalance, order.Accrual, order.Login)
 	} else {
 		_, err = tx.Exec(ctx, updateOrder, order.Status, order.OrderID)
 	}

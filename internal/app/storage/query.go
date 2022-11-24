@@ -39,7 +39,7 @@ const (
 	getUserWithdrawals   = `SELECT order_id, accrual, processed_at FROM withdrawals WHERE user_login=$1`
 	updateOrder          = `UPDATE orders SET status=$1 WHERE id=$2`
 	updateProcessedOrder = `UPDATE orders SET status=$1, accrual=$2 WHERE id=$3`
-	updateBalance        = `UPDATE users SET balance=balance+$2`
+	updateBalance        = `UPDATE users SET balance=balance+$1 WHERE login=$2`
 	userVerifyBalance    = `UPDATE users SET balance=balance-$2 WHERE balance>$2 AND login=$1`
 	userWithdraw         = `INSERT INTO withdrawals (order_id, accrual, user_login)
 						 VALUES $1, $2, $3`
