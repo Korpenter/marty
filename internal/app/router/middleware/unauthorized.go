@@ -3,6 +3,7 @@ package middleware
 import (
 	"context"
 	"encoding/json"
+	"github.com/Mldlr/marty/internal/app/constant"
 	"github.com/Mldlr/marty/internal/app/models"
 	"github.com/Mldlr/marty/internal/util/validators"
 	"net/http"
@@ -21,7 +22,7 @@ func Unauthorized(next http.Handler) http.Handler {
 			http.Error(w, "data validation constant", http.StatusBadRequest)
 			return
 		}
-		req := r.WithContext(context.WithValue(r.Context(), "cred", cred))
+		req := r.WithContext(context.WithValue(r.Context(), constant.CredKey, cred))
 		*r = *req
 		next.ServeHTTP(w, r)
 	})

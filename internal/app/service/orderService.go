@@ -44,25 +44,23 @@ func NewOrderService(cfg *config.Config, repo storage.Repository) OrderService {
 
 func (s *OrderServiceImpl) PollAccrual() {
 	for {
-		select {
-		case order := <-s.accrualQueue:
-			gotOrder, retryAfter, err := s.getAccrual(order)
-			if retryAfter == -1 {
-				continue
-			}
-			if err != nil {
-				logging.Logger.Error("constant polling accrual service:" + err.Error())
-				s.accrualQueue <- order
-				time.Sleep(time.Duration(retryAfter) * time.Second)
-				continue
-			}
-			if gotOrder.Status != order.Status {
-				order.Status = gotOrder.Status
-				s.updateQueue <- gotOrder
-			}
-			if order.Status == constant.StatusProcessing || order.Status == constant.StatusRegistered || order.Status == "" {
-				s.accrualQueue <- order
-			}
+		order := <-s.accrualQueue
+		gotOrder, retryAfter, err := s.getAccrual(order)
+		if retryAfter == -1 {
+			continue
+		}
+		if err != nil {
+			logging.Logger.Error("constant polling accrual service:" + err.Error())
+			s.accrualQueue <- order
+			time.Sleep(time.Duration(retryAfter) * time.Second)
+			continue
+		}
+		if gotOrder.Status != order.Status {
+			order.Status = gotOrder.Status
+			s.updateQueue <- gotOrder
+		}
+		if order.Status == constant.StatusProcessing || order.Status == constant.StatusRegistered || order.Status == "" {
+			s.accrualQueue <- order
 		}
 	}
 }
@@ -113,13 +111,11 @@ func (s *OrderServiceImpl) GetOrdersByUser(ctx context.Context) ([]models.OrderI
 
 func (s *OrderServiceImpl) UpdateOrders(ctx context.Context) {
 	for {
-		select {
-		case order := <-s.updateQueue:
-			err := s.repo.UpdateOrder(ctx, order)
-			if err != nil {
-				s.updateQueue <- order
-				logging.Logger.Error("constant updating order :" + err.Error())
-			}
+		order := <-s.updateQueue
+		err := s.repo.UpdateOrder(ctx, order)
+		if err != nil {
+			s.updateQueue <- order
+			logging.Logger.Error("constant updating order :" + err.Error())
 		}
 	}
 }

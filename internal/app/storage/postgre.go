@@ -120,7 +120,7 @@ func (r *PostgresRepo) AddOrder(ctx context.Context, order *models.Order) error 
 func (r *PostgresRepo) GetOrdersByUser(ctx context.Context) ([]models.OrderItem, error) {
 	var order models.OrderItem
 	orders := make([]models.OrderItem, 0)
-	rows, err := r.conn.Query(ctx, getOrdersByUser, ctx.Value("login").(string))
+	rows, err := r.conn.Query(ctx, getOrdersByUser, ctx.Value(constant.LoginKey).(string))
 	if err != nil {
 		return nil, err
 	}
@@ -143,7 +143,7 @@ func (r *PostgresRepo) GetOrdersByUser(ctx context.Context) ([]models.OrderItem,
 
 func (r *PostgresRepo) GetBalance(ctx context.Context) (*models.Balance, error) {
 	var balance models.Balance
-	err := r.conn.QueryRow(ctx, getUserBalance, ctx.Value("login").(string)).Scan(&balance.Current, &balance.Withdrawn)
+	err := r.conn.QueryRow(ctx, getUserBalance, ctx.Value(constant.LoginKey).(string)).Scan(&balance.Current, &balance.Withdrawn)
 	if err != nil {
 		log.Println(err)
 		return nil, err
@@ -154,7 +154,7 @@ func (r *PostgresRepo) GetBalance(ctx context.Context) (*models.Balance, error) 
 func (r *PostgresRepo) GetWithdrawals(ctx context.Context) ([]models.Withdrawal, error) {
 	var withdrawal models.Withdrawal
 	withdrawals := make([]models.Withdrawal, 0)
-	rows, err := r.conn.Query(ctx, getUserWithdrawals, ctx.Value("login").(string))
+	rows, err := r.conn.Query(ctx, getUserWithdrawals, ctx.Value(constant.LoginKey).(string))
 	if err != nil {
 		return nil, err
 	}

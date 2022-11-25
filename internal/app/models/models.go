@@ -5,6 +5,8 @@ import (
 	"time"
 )
 
+type LoginKey string
+
 type Order struct {
 	Login   string
 	Status  string           `json:"status"`

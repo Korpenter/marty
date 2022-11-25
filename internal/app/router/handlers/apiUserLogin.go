@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/Mldlr/marty/internal/app"
+	"github.com/Mldlr/marty/internal/app/constant"
 	"github.com/Mldlr/marty/internal/app/container"
 	"github.com/Mldlr/marty/internal/app/logging"
 	"github.com/Mldlr/marty/internal/app/models"
@@ -18,7 +19,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 			logging.Logger.Error("login constant :" + err.Error())
 		}
 	}()
-	cred := r.Context().Value("cred").(*models.Authorization)
+	cred := r.Context().Value(constant.CredKey).(*models.Authorization)
 	userService := container.Container.Get("userService").(service.UserService)
 	err = userService.LogInUser(r.Context(), cred)
 	switch {

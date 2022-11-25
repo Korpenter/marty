@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/Mldlr/marty/internal/app"
+	"github.com/Mldlr/marty/internal/app/constant"
 	"github.com/Mldlr/marty/internal/app/container"
 	"github.com/Mldlr/marty/internal/app/logging"
 	"github.com/Mldlr/marty/internal/app/models"
@@ -26,7 +27,7 @@ func UserWithdraw(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer r.Body.Close()
-	withdrawal.Login = r.Context().Value("login").(string)
+	withdrawal.Login = r.Context().Value(constant.LoginKey).(string)
 	if !validators.Luhn(withdrawal.OrderID) {
 		http.Error(w, "invalid order number", http.StatusUnprocessableEntity)
 		return

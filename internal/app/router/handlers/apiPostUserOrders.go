@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/Mldlr/marty/internal/app"
+	"github.com/Mldlr/marty/internal/app/constant"
 	"github.com/Mldlr/marty/internal/app/container"
 	"github.com/Mldlr/marty/internal/app/logging"
 	"github.com/Mldlr/marty/internal/app/models"
@@ -32,7 +33,7 @@ func AddOrder(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	order := models.Order{
-		Login:   r.Context().Value("login").(string),
+		Login:   r.Context().Value(constant.LoginKey).(string),
 		OrderID: orderID,
 	}
 	orderService := container.Container.Get("orderService").(service.OrderService)
