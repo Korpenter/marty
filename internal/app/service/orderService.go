@@ -37,7 +37,7 @@ func NewOrderService(cfg *config.Config, repo storage.Repository) OrderService {
 		cfg:          cfg,
 		updateQueue:  make(chan *models.Order, 1000),
 		accrualQueue: make(chan *models.Order, 1000),
-		accrual:      fmt.Sprintf("http://%s/api/orders/", cfg.AccrualAddress),
+		accrual:      fmt.Sprintf("%s/api/orders/", cfg.AccrualAddress),
 		Queue:        make(chan *models.Order, 1000),
 	}
 }
