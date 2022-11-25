@@ -49,7 +49,7 @@ func (r *PostgresRepo) NewTables() error {
 	}
 	_, err = r.conn.Exec(ctx, createWithdrawals)
 	if err != nil {
-		return fmt.Errorf("orders : %s", err)
+		return fmt.Errorf("withdrawals : %s", err)
 	}
 	return nil
 }

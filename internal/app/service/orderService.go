@@ -50,7 +50,7 @@ func (s *OrderServiceImpl) PollAccrual() {
 			continue
 		}
 		if err != nil {
-			logging.Logger.Error("constant polling accrual service:" + err.Error())
+			logging.Logger.Error("error polling accrual service:" + err.Error())
 			s.accrualQueue <- order
 			time.Sleep(time.Duration(retryAfter) * time.Second)
 			continue
@@ -78,12 +78,12 @@ func (s *OrderServiceImpl) getAccrual(order *models.Order) (*models.Order, int, 
 		retryAfter, _ := strconv.Atoi(retryAfterHeader)
 		return nil, retryAfter, fmt.Errorf("too many requests")
 	case r.StatusCode == http.StatusInternalServerError:
-		return nil, 0, fmt.Errorf("accrual server constant")
+		return nil, 0, fmt.Errorf("accrual server error")
 	}
 	var gotOrder models.Order
 	defer r.Body.Close()
 	if err = json.NewDecoder(r.Body).Decode(&gotOrder); err != nil {
-		return nil, 0, fmt.Errorf("constant decoding json: %s", err)
+		return nil, 0, fmt.Errorf("error decoding json: %s", err)
 	}
 	return &gotOrder, 0, nil
 }
@@ -115,7 +115,7 @@ func (s *OrderServiceImpl) UpdateOrders(ctx context.Context) {
 		err := s.repo.UpdateOrder(ctx, order)
 		if err != nil {
 			s.updateQueue <- order
-			logging.Logger.Error("constant updating order :" + err.Error())
+			logging.Logger.Error("error updating order :" + err.Error())
 		}
 	}
 }

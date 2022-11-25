@@ -18,12 +18,12 @@ func UserWithdraw(w http.ResponseWriter, r *http.Request) {
 	var err error
 	defer func() {
 		if err != nil {
-			logging.Logger.Error("constant withdrawing :" + err.Error())
+			logging.Logger.Error("error withdrawing :" + err.Error())
 		}
 	}()
 	var withdrawal *models.Withdrawal
 	if err = json.NewDecoder(r.Body).Decode(&withdrawal); err != nil {
-		http.Error(w, "constant reading request", http.StatusBadRequest)
+		http.Error(w, "error reading request", http.StatusBadRequest)
 		return
 	}
 	defer r.Body.Close()

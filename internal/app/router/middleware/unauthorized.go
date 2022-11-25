@@ -14,12 +14,12 @@ func Unauthorized(next http.Handler) http.Handler {
 		var cred *models.Authorization
 		var err error
 		if err = json.NewDecoder(r.Body).Decode(&cred); err != nil {
-			http.Error(w, "constant reading request", http.StatusBadRequest)
+			http.Error(w, "error reading request", http.StatusBadRequest)
 			return
 		}
 		defer r.Body.Close()
 		if err = validators.ValidateAuthorization(cred); err != nil {
-			http.Error(w, "data validation constant", http.StatusBadRequest)
+			http.Error(w, "data validation error", http.StatusBadRequest)
 			return
 		}
 		req := r.WithContext(context.WithValue(r.Context(), constant.CredKey, cred))

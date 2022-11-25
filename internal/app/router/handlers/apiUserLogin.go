@@ -16,7 +16,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	var err error
 	defer func() {
 		if err != nil {
-			logging.Logger.Error("login constant :" + err.Error())
+			logging.Logger.Error("login error :" + err.Error())
 		}
 	}()
 	cred := r.Context().Value(constant.CredKey).(*models.Authorization)
@@ -24,13 +24,13 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	err = userService.LogInUser(r.Context(), cred)
 	switch {
 	case errors.Is(app.ErrWrongPassword, err) || errors.Is(app.ErrUserNotFound, err):
-		http.Error(w, fmt.Sprintf("login constant: %s", err), http.StatusUnauthorized)
+		http.Error(w, fmt.Sprintf("login error: %s", err), http.StatusUnauthorized)
 		return
 	case errors.Is(app.ErrDataValidation, err):
-		http.Error(w, fmt.Sprintf("login constant: %s", err), http.StatusBadRequest)
+		http.Error(w, fmt.Sprintf("login error: %s", err), http.StatusBadRequest)
 		return
 	case err != nil:
-		http.Error(w, fmt.Sprintf("login constant: %s", err), http.StatusInternalServerError)
+		http.Error(w, fmt.Sprintf("login error: %s", err), http.StatusInternalServerError)
 		return
 	}
 	jwtCookie, err := userService.BakeJWTCookie(cred.Login)

@@ -13,7 +13,7 @@ func UserWithdrawals(w http.ResponseWriter, r *http.Request) {
 	var err error
 	defer func() {
 		if err != nil {
-			logging.Logger.Error("constant getting withdrawals:" + err.Error())
+			logging.Logger.Error("error getting withdrawals:" + err.Error())
 		}
 	}()
 	userService := container.Container.Get("userService").(service.UserService)
@@ -28,7 +28,7 @@ func UserWithdrawals(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Header().Set("Content-Type", "application/json")
 	if err = json.NewEncoder(w).Encode(withdrawalsItems); err != nil {
-		http.Error(w, "constant building the response", http.StatusInternalServerError)
+		http.Error(w, "error building the response", http.StatusInternalServerError)
 		return
 	}
 	w.WriteHeader(http.StatusOK)

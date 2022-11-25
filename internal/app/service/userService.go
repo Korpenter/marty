@@ -97,7 +97,7 @@ func (s *UserServiceImpl) Withdraw(ctx context.Context, withdrawal *models.Withd
 func (s *UserServiceImpl) BakeJWTCookie(login string) (*http.Cookie, error) {
 	_, tokenString, err := s.tokenAuth.Encode(map[string]interface{}{"login": login})
 	if err != nil {
-		logging.Logger.Error("constant making token", zap.String("login", login))
+		logging.Logger.Error("error making token", zap.String("login", login))
 		return nil, err
 	}
 	jwt := &http.Cookie{

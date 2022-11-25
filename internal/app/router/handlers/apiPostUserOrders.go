@@ -18,12 +18,12 @@ func AddOrder(w http.ResponseWriter, r *http.Request) {
 	var err error
 	defer func() {
 		if err != nil {
-			logging.Logger.Error("constant adding order :" + err.Error())
+			logging.Logger.Error("error adding order :" + err.Error())
 		}
 	}()
 	b, err := io.ReadAll(r.Body)
 	if err != nil {
-		http.Error(w, "constant reading request", http.StatusBadRequest)
+		http.Error(w, "error reading request", http.StatusBadRequest)
 		return
 	}
 	defer r.Body.Close()
@@ -40,13 +40,13 @@ func AddOrder(w http.ResponseWriter, r *http.Request) {
 	err = orderService.AddOrder(r.Context(), &order)
 	switch {
 	case errors.Is(app.ErrOrderAlreadyAdded, err):
-		http.Error(w, fmt.Sprintf("constant adding order: %s", err), http.StatusConflict)
+		http.Error(w, fmt.Sprintf("error adding order: %s", err), http.StatusConflict)
 		return
 	case errors.Is(app.ErrOrderAlreadyAddedByUser, err):
-		http.Error(w, fmt.Sprintf("constant adding order: %s", err), http.StatusOK)
+		http.Error(w, fmt.Sprintf("error adding order: %s", err), http.StatusOK)
 		return
 	case err != nil:
-		http.Error(w, fmt.Sprintf("constant adding order: %s", err), http.StatusInternalServerError)
+		http.Error(w, fmt.Sprintf("error adding order: %s", err), http.StatusInternalServerError)
 		return
 	}
 	orderService.GetAccrual(&order)
