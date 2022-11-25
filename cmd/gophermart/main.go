@@ -10,6 +10,10 @@ import (
 	"github.com/Mldlr/marty/internal/app/service"
 	"github.com/Mldlr/marty/internal/app/storage"
 	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
 )
 
 func main() {
@@ -35,7 +39,28 @@ func main() {
 
 	logging.Logger.Info(fmt.Sprintf("Starting at: %s, with Accrual: %s", cfg.ServiceAddress, cfg.AccrualAddress))
 
-	if err = http.ListenAndServe(cfg.ServiceAddress, r); err != nil && err != http.ErrServerClosed {
+	srv := &http.Server{
+		Handler: r,
+		Addr:    cfg.ServiceAddress,
+	}
+	go func() {
+		if err = srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			logging.Logger.Error(err.Error())
+		}
+	}()
+
+	stop := make(chan os.Signal, 1)
+
+	signal.Notify(stop, os.Interrupt, syscall.SIGTERM)
+
+	<-stop
+
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+	defer cancel()
+
+	logging.Logger.Info("Stopping the server")
+
+	if err := srv.Shutdown(ctx); err != nil {
 		logging.Logger.Error(err.Error())
 	}
 }
