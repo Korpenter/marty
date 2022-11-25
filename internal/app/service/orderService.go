@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/Mldlr/marty/internal/app/config"
+	"github.com/Mldlr/marty/internal/app/constant"
 	"github.com/Mldlr/marty/internal/app/logging"
 	"github.com/Mldlr/marty/internal/app/models"
 	"github.com/Mldlr/marty/internal/app/storage"
@@ -59,7 +60,7 @@ func (s *OrderServiceImpl) PollAccrual() {
 				order.Status = gotOrder.Status
 				s.updateQueue <- gotOrder
 			}
-			if order.Status == "PROCESSING" || order.Status == "REGISTERED" || order.Status == "" {
+			if order.Status == constant.StatusProcessing || order.Status == constant.StatusRegistered || order.Status == "" {
 				s.accrualQueue <- order
 			}
 		}
