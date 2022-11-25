@@ -4,28 +4,29 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/Mldlr/marty/internal/app/constant"
+	"github.com/Mldlr/marty/internal/app"
 	"github.com/Mldlr/marty/internal/app/container"
+	"github.com/Mldlr/marty/internal/app/logging"
 	"github.com/Mldlr/marty/internal/app/models"
 	"github.com/Mldlr/marty/internal/app/service"
 	"github.com/Mldlr/marty/internal/util/validators"
-	"github.com/go-chi/jwtauth/v5"
 	"net/http"
 )
 
 func UserWithdraw(w http.ResponseWriter, r *http.Request) {
-	_, claims, err := jwtauth.FromContext(r.Context())
-	if err != nil {
-		http.Error(w, "jwt error", http.StatusInternalServerError)
-		return
-	}
+	var err error
+	defer func() {
+		if err != nil {
+			logging.Logger.Error("constant withdrawing :" + err.Error())
+		}
+	}()
 	var withdrawal *models.Withdrawal
 	if err = json.NewDecoder(r.Body).Decode(&withdrawal); err != nil {
-		http.Error(w, "error reading request", http.StatusBadRequest)
+		http.Error(w, "constant reading request", http.StatusBadRequest)
 		return
 	}
 	defer r.Body.Close()
-	withdrawal.Login = claims["login"].(string)
+	withdrawal.Login = r.Context().Value("login").(string)
 	if !validators.Luhn(withdrawal.OrderID) {
 		http.Error(w, "invalid order number", http.StatusUnprocessableEntity)
 		return
@@ -33,7 +34,7 @@ func UserWithdraw(w http.ResponseWriter, r *http.Request) {
 	userService := container.Container.Get("userService").(service.UserService)
 	err = userService.Withdraw(r.Context(), withdrawal)
 	switch {
-	case errors.Is(constant.ErrInsufficientBalance, err):
+	case errors.Is(app.ErrInsufficientBalance, err):
 		http.Error(w, fmt.Sprintf("cant withdraw: %s", err), http.StatusBadRequest)
 		return
 	case err != nil:

@@ -4,19 +4,20 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/Mldlr/marty/internal/app/container"
+	"github.com/Mldlr/marty/internal/app/logging"
 	"github.com/Mldlr/marty/internal/app/service"
-	"github.com/go-chi/jwtauth/v5"
 	"net/http"
 )
 
 func UserWithdrawals(w http.ResponseWriter, r *http.Request) {
-	_, claims, err := jwtauth.FromContext(r.Context())
-	if err != nil {
-		http.Error(w, "jwt error", http.StatusInternalServerError)
-		return
-	}
+	var err error
+	defer func() {
+		if err != nil {
+			logging.Logger.Error("constant getting withdrawals:" + err.Error())
+		}
+	}()
 	userService := container.Container.Get("userService").(service.UserService)
-	withdrawalsItems, err := userService.GetWithdrawals(r.Context(), claims["login"].(string))
+	withdrawalsItems, err := userService.GetWithdrawals(r.Context())
 	if err != nil {
 		http.Error(w, fmt.Sprintf("cant get orders: %s", err), http.StatusInternalServerError)
 		return
@@ -27,7 +28,7 @@ func UserWithdrawals(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Header().Set("Content-Type", "application/json")
 	if err = json.NewEncoder(w).Encode(withdrawalsItems); err != nil {
-		http.Error(w, "error building the response", http.StatusInternalServerError)
+		http.Error(w, "constant building the response", http.StatusInternalServerError)
 		return
 	}
 	w.WriteHeader(http.StatusOK)

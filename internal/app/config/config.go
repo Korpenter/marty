@@ -14,12 +14,12 @@ type Config struct {
 }
 
 func NewConfig() *Config {
-	var c Config
+	var cfg Config
 	decimal.MarshalJSONWithoutQuotes = true
-	envconfig.MustProcess("", &c)
-	flag.StringVar(&c.ServiceAddress, "a", c.ServiceAddress, "адрес и порт запуска сервиса")
-	flag.StringVar(&c.PostgresURI, "d", c.PostgresURI, "адрес подключения к базе данных")
-	flag.StringVar(&c.AccrualAddress, "r", c.AccrualAddress, "адрес системы расчёта начислений")
+	envconfig.MustProcess("", &cfg)
+	flag.StringVar(&cfg.ServiceAddress, "a", cfg.ServiceAddress, "адрес и порт запуска сервиса")
+	flag.StringVar(&cfg.PostgresURI, "d", cfg.PostgresURI, "адрес подключения к базе данных")
+	flag.StringVar(&cfg.AccrualAddress, "r", cfg.AccrualAddress, "адрес системы расчёта начислений")
 	flag.Parse()
-	return &c
+	return &cfg
 }

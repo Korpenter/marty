@@ -2,10 +2,10 @@ package container
 
 import (
 	"github.com/Mldlr/marty/internal/app/config"
+	"github.com/Mldlr/marty/internal/app/logging"
 	"github.com/Mldlr/marty/internal/app/service"
 	"github.com/Mldlr/marty/internal/app/storage"
 	"github.com/sarulabs/di/v2"
-	"log"
 )
 
 var Container di.Container
@@ -39,7 +39,7 @@ func BuildContainer(cfg *config.Config, repo storage.Repository, userService ser
 		},
 	}...)
 	if err != nil {
-		log.Fatalln(err)
+		logging.Logger.Fatal(err.Error())
 	}
 	Container = builder.Build()
 }

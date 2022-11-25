@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/Mldlr/marty/internal/app"
 	"github.com/Mldlr/marty/internal/app/constant"
 	"github.com/Mldlr/marty/internal/app/models"
 	pgxdecimal "github.com/jackc/pgx-shopspring-decimal"
@@ -70,7 +71,7 @@ func (r *PostgresRepo) CreateUser(ctx context.Context, user *models.Authorizatio
 		return err
 	}
 	if commandTag.RowsAffected() != 1 {
-		return constant.ErrUserExists
+		return app.ErrUserExists
 	}
 	return nil
 }
@@ -79,7 +80,7 @@ func (r *PostgresRepo) GetHashedPasswordByLogin(ctx context.Context, login strin
 	err := r.conn.QueryRow(ctx, getHashByLogin, login).Scan(&hash)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return "", constant.ErrUserNotFound
+			return "", app.ErrUserNotFound
 		}
 		return "", err
 	}
@@ -109,17 +110,17 @@ func (r *PostgresRepo) AddOrder(ctx context.Context, order *models.Order) error 
 			return err
 		}
 		if returnLogin != order.Login {
-			return constant.ErrOrderAlreadyAdded
+			return app.ErrOrderAlreadyAdded
 		}
-		return constant.ErrOrderAlreadyAddedByUser
+		return app.ErrOrderAlreadyAddedByUser
 	}
 	return nil
 }
 
-func (r *PostgresRepo) GetOrdersByUser(ctx context.Context, login string) ([]models.OrderItem, error) {
+func (r *PostgresRepo) GetOrdersByUser(ctx context.Context) ([]models.OrderItem, error) {
 	var order models.OrderItem
 	orders := make([]models.OrderItem, 0)
-	rows, err := r.conn.Query(ctx, getOrdersByUser, login)
+	rows, err := r.conn.Query(ctx, getOrdersByUser, ctx.Value("login").(string))
 	if err != nil {
 		return nil, err
 	}
@@ -140,10 +141,9 @@ func (r *PostgresRepo) GetOrdersByUser(ctx context.Context, login string) ([]mod
 	return orders, nil
 }
 
-func (r *PostgresRepo) GetBalance(ctx context.Context, login string) (*models.Balance, error) {
-	log.Println("getbalance")
+func (r *PostgresRepo) GetBalance(ctx context.Context) (*models.Balance, error) {
 	var balance models.Balance
-	err := r.conn.QueryRow(ctx, getUserBalance, login).Scan(&balance.Current, &balance.Withdrawn)
+	err := r.conn.QueryRow(ctx, getUserBalance, ctx.Value("login").(string)).Scan(&balance.Current, &balance.Withdrawn)
 	if err != nil {
 		log.Println(err)
 		return nil, err
@@ -151,10 +151,10 @@ func (r *PostgresRepo) GetBalance(ctx context.Context, login string) (*models.Ba
 	return &balance, nil
 }
 
-func (r *PostgresRepo) GetWithdrawals(ctx context.Context, login string) ([]models.Withdrawal, error) {
+func (r *PostgresRepo) GetWithdrawals(ctx context.Context) ([]models.Withdrawal, error) {
 	var withdrawal models.Withdrawal
 	withdrawals := make([]models.Withdrawal, 0)
-	rows, err := r.conn.Query(ctx, getUserWithdrawals, login)
+	rows, err := r.conn.Query(ctx, getUserWithdrawals, ctx.Value("login").(string))
 	if err != nil {
 		return nil, err
 	}
@@ -173,7 +173,6 @@ func (r *PostgresRepo) GetWithdrawals(ctx context.Context, login string) ([]mode
 }
 
 func (r *PostgresRepo) Withdraw(ctx context.Context, withdrawal *models.Withdrawal) error {
-	log.Println("withdraw")
 	tx, err := r.conn.Begin(ctx)
 	if err != nil {
 		return err
@@ -187,22 +186,19 @@ func (r *PostgresRepo) Withdraw(ctx context.Context, withdrawal *models.Withdraw
 	}()
 	commandTag, err := tx.Exec(ctx, userVerifyBalance, withdrawal.Sum, withdrawal.Login)
 	if err != nil {
-		log.Println("withdraw error", err)
 		return err
 	}
 	if commandTag.RowsAffected() != 1 {
-		return constant.ErrInsufficientBalance
+		return app.ErrInsufficientBalance
 	}
 	_, err = tx.Exec(ctx, userWithdraw, withdrawal.OrderID, withdrawal.Sum, withdrawal.Login)
 	if err != nil {
-		log.Println("withdraw error", err)
 		return err
 	}
 	return nil
 }
 
 func (r *PostgresRepo) UpdateOrder(ctx context.Context, order *models.Order) error {
-	log.Println("update")
 	tx, err := r.conn.Begin(ctx)
 	if err != nil {
 		return err
@@ -214,11 +210,9 @@ func (r *PostgresRepo) UpdateOrder(ctx context.Context, order *models.Order) err
 			tx.Commit(ctx)
 		}
 	}()
-	if order.Status == "PROCESSED" {
-		_, err = tx.Exec(ctx, updateProcessedOrder, order.Status, order.Accrual, order.OrderID)
-		log.Println("Processed order")
+	if order.Status == constant.StatusProcessed {
+		err = tx.QueryRow(ctx, updateProcessedOrder, order.Status, order.Accrual, order.OrderID).Scan(&order.Login)
 		if err != nil {
-			log.Println("Error after Processed order")
 			return err
 		}
 		_, err = tx.Exec(ctx, updateBalance, order.Accrual, order.Login)

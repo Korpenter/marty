@@ -22,12 +22,13 @@ func NewRouter() chi.Router {
 	r.Use(middleware.Decompress)
 	r.Group(func(r chi.Router) {
 		r.Use(chiMiddleware.AllowContentType("application/json"))
+		r.Use(middleware.Unauthorized)
 		r.Post("/api/user/register", handlers.Register)
 		r.Post("/api/user/login", handlers.Login)
 	})
 	r.Group(func(r chi.Router) {
 		r.Use(jwtauth.Verifier(tokenAuth))
-		r.Use(jwtauth.Authenticator)
+		r.Use(middleware.Authenticator)
 		r.Get("/api/user/orders", handlers.UserOrders)
 		r.Get("/api/user/balance", handlers.UserBalance)
 		r.Get("/api/user/withdrawals", handlers.UserWithdrawals)

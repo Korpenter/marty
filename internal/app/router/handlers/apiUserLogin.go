@@ -1,49 +1,42 @@
 package handlers
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/Mldlr/marty/internal/app/constant"
+	"github.com/Mldlr/marty/internal/app"
 	"github.com/Mldlr/marty/internal/app/container"
+	"github.com/Mldlr/marty/internal/app/logging"
 	"github.com/Mldlr/marty/internal/app/models"
 	"github.com/Mldlr/marty/internal/app/service"
-	"github.com/Mldlr/marty/internal/util/validators"
 	"net/http"
-	"time"
 )
 
 func Login(w http.ResponseWriter, r *http.Request) {
-	var cred *models.Authorization
 	var err error
-	if err = json.NewDecoder(r.Body).Decode(&cred); err != nil {
-		http.Error(w, "error reading request", http.StatusBadRequest)
-		return
-	}
-	defer r.Body.Close()
-	if err = validators.ValidateAuthorization(cred); err != nil {
-		http.Error(w, "data validation error", http.StatusBadRequest)
-		return
-	}
+	defer func() {
+		if err != nil {
+			logging.Logger.Error("login constant :" + err.Error())
+		}
+	}()
+	cred := r.Context().Value("cred").(*models.Authorization)
 	userService := container.Container.Get("userService").(service.UserService)
-	_, err = userService.LogInUser(r.Context(), cred)
+	err = userService.LogInUser(r.Context(), cred)
 	switch {
-	case errors.Is(constant.ErrWrongPassword, err) || errors.Is(constant.ErrUserNotFound, err):
-		http.Error(w, fmt.Sprintf("cant login: %s", err), http.StatusUnauthorized)
+	case errors.Is(app.ErrWrongPassword, err) || errors.Is(app.ErrUserNotFound, err):
+		http.Error(w, fmt.Sprintf("login constant: %s", err), http.StatusUnauthorized)
 		return
-	case errors.Is(constant.ErrDataValidation, err):
-		http.Error(w, fmt.Sprintf("cant login: %s", err), http.StatusBadRequest)
+	case errors.Is(app.ErrDataValidation, err):
+		http.Error(w, fmt.Sprintf("login constant: %s", err), http.StatusBadRequest)
 		return
 	case err != nil:
-		http.Error(w, fmt.Sprintf("cant login: %s", err), http.StatusInternalServerError)
+		http.Error(w, fmt.Sprintf("login constant: %s", err), http.StatusInternalServerError)
 		return
 	}
-	jwt := &http.Cookie{
-		Path:    "/",
-		Name:    "jwt",
-		Expires: time.Now().Add(7 * 24 * time.Hour),
-		Value:   userService.MakeToken(cred.Login),
+	jwtCookie, err := userService.BakeJWTCookie(cred.Login)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("login constant: %s", err), http.StatusInternalServerError)
+		return
 	}
-	http.SetCookie(w, jwt)
+	http.SetCookie(w, jwtCookie)
 	w.WriteHeader(http.StatusOK)
 }
