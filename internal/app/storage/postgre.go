@@ -141,6 +141,7 @@ func (r *PostgresRepo) GetOrdersByUser(ctx context.Context, login string) ([]mod
 }
 
 func (r *PostgresRepo) GetBalance(ctx context.Context, login string) (*models.Balance, error) {
+	log.Println("getbalance")
 	var balance models.Balance
 	err := r.conn.QueryRow(ctx, getUserBalance, login).Scan(&balance.Current, &balance.Withdrawn)
 	if err != nil {
@@ -172,6 +173,7 @@ func (r *PostgresRepo) GetWithdrawals(ctx context.Context, login string) ([]mode
 }
 
 func (r *PostgresRepo) Withdraw(ctx context.Context, withdrawal *models.Withdrawal) error {
+	log.Println("withdraw")
 	tx, err := r.conn.Begin(ctx)
 	if err != nil {
 		return err
@@ -183,8 +185,9 @@ func (r *PostgresRepo) Withdraw(ctx context.Context, withdrawal *models.Withdraw
 			tx.Commit(ctx)
 		}
 	}()
-	commandTag, err := tx.Exec(ctx, userVerifyBalance, withdrawal.Login, withdrawal.Sum)
+	commandTag, err := tx.Exec(ctx, userVerifyBalance, withdrawal.Sum, withdrawal.Login)
 	if err != nil {
+		log.Println("withdraw error", err)
 		return err
 	}
 	if commandTag.RowsAffected() != 1 {
@@ -192,12 +195,14 @@ func (r *PostgresRepo) Withdraw(ctx context.Context, withdrawal *models.Withdraw
 	}
 	_, err = tx.Exec(ctx, userWithdraw, withdrawal.OrderID, withdrawal.Sum, withdrawal.Login)
 	if err != nil {
+		log.Println("withdraw error", err)
 		return err
 	}
 	return nil
 }
 
 func (r *PostgresRepo) UpdateOrder(ctx context.Context, order *models.Order) error {
+	log.Println("update")
 	tx, err := r.conn.Begin(ctx)
 	if err != nil {
 		return err
@@ -210,7 +215,6 @@ func (r *PostgresRepo) UpdateOrder(ctx context.Context, order *models.Order) err
 		}
 	}()
 	if order.Status == "PROCESSED" {
-
 		_, err = tx.Exec(ctx, updateProcessedOrder, order.Status, order.Accrual, order.OrderID)
 		log.Println("Processed order")
 		if err != nil {

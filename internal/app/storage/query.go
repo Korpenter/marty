@@ -34,15 +34,15 @@ const (
 	getOrderUserid  = `SELECT user_login FROM orders WHERE id = $1`
 	getOrdersByUser = `SELECT id, status, accrual, uploaded_at FROM orders WHERE user_login=$1`
 	getUserBalance  = `SELECT balance, sum(accrual)
-					   FROM users u  LEFT JOIN withdrawals w ON w.user_login = u.login
-					   WHERE user_login = $1 GROUP BY user_login, balance`
+			     	   FROM users u LEFT JOIN withdrawals w ON u.login = w.user_login
+			     	   where u.login = $1 group by login, balance`
 	getUserWithdrawals   = `SELECT order_id, accrual, processed_at FROM withdrawals WHERE user_login=$1`
 	updateOrder          = `UPDATE orders SET status=$1 WHERE id=$2`
 	updateProcessedOrder = `UPDATE orders SET status=$1, accrual=$2 WHERE id=$3`
-	updateBalance        = `UPDATE users SET balance=balance+$1 WHERE login=$2`
-	userVerifyBalance    = `UPDATE users SET balance=balance-$2 WHERE balance>$2 AND login=$1`
+	updateBalance        = `UPDATE users SET balance=balance+$1 WHERE login = $2`
+	userVerifyBalance    = `UPDATE users SET balance=balance-$1 WHERE balance>$1 AND login=$2`
 	userWithdraw         = `INSERT INTO withdrawals (order_id, accrual, user_login)
-						 VALUES $1, $2, $3`
+						 VALUES ($1, $2, $3)`
 	dropTables = `DROP TABLE withdrawals
 				  DROP TABLE orders
 				  DROP TABLE users`

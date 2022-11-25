@@ -30,7 +30,7 @@ func NewRouter() chi.Router {
 		r.Use(jwtauth.Authenticator)
 		r.Get("/api/user/orders", handlers.UserOrders)
 		r.Get("/api/user/balance", handlers.UserBalance)
-		r.Get("/api/user/balance/withdrawals", handlers.UserWithdrawals)
+		r.Get("/api/user/withdrawals", handlers.UserWithdrawals)
 
 		r.Group(func(r chi.Router) {
 			r.Use(chiMiddleware.AllowContentType("text/plain"))

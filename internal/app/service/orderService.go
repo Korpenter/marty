@@ -48,13 +48,12 @@ func (s *OrderServiceImpl) PollAccrual() {
 		order := <-s.accrualQueue
 		gotOrder, retryAfter, err := s.getAccrual(order)
 		if err != nil {
-			//log.Println(err)
 			s.accrualQueue <- order
 			time.Sleep(time.Duration(retryAfter) * time.Second)
 			continue
 		}
 		if gotOrder.Status != order.Status {
-			order.Status = gotOrder.Status
+			order.Status, gotOrder.Login = gotOrder.Status, order.Login
 			s.updateQueue <- gotOrder
 		}
 		if order.Status == "PROCESSING" || order.Status == "REGISTERED" || order.Status == "" {
@@ -65,7 +64,6 @@ func (s *OrderServiceImpl) PollAccrual() {
 
 func (s *OrderServiceImpl) getAccrual(order *models.Order) (*models.Order, int, error) {
 	r, err := s.httpClient.Get(s.accrual + order.OrderID)
-	//log.Println("getting accrual")
 	if err != nil {
 		return nil, 0, err
 	}

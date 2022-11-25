@@ -3,6 +3,7 @@ package config
 import (
 	"flag"
 	"github.com/kelseyhightower/envconfig"
+	"github.com/shopspring/decimal"
 )
 
 type Config struct {
@@ -14,6 +15,7 @@ type Config struct {
 
 func NewConfig() *Config {
 	var c Config
+	decimal.MarshalJSONWithoutQuotes = true
 	envconfig.MustProcess("", &c)
 	flag.StringVar(&c.ServiceAddress, "a", c.ServiceAddress, "адрес и порт запуска сервиса")
 	flag.StringVar(&c.PostgresURI, "d", c.PostgresURI, "адрес подключения к базе данных")
