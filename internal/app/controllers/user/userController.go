@@ -78,18 +78,18 @@ func (c *UserController) Register(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	cred := r.Context().Value(models.CredKey{}).(*models.Authorization)
 	err := c.userService.CreateUser(ctx, cred)
-	switch err {
-	case nil:
-		break
-	case models.ErrUserExists:
-		c.HandleError(w, r, err, http.StatusConflict)
-		return
-	case models.ErrDataValidation:
-		c.HandleError(w, r, err, http.StatusBadRequest)
-		return
-	default:
-		c.HandleError(w, r, err, http.StatusInternalServerError)
-		return
+	if err != nil {
+		switch err {
+		case models.ErrUserExists:
+			c.HandleError(w, r, err, http.StatusConflict)
+			return
+		case models.ErrDataValidation:
+			c.HandleError(w, r, err, http.StatusBadRequest)
+			return
+		default:
+			c.HandleError(w, r, err, http.StatusInternalServerError)
+			return
+		}
 	}
 	jwtCookie, err := c.userService.BakeJWTCookie(cred.Login)
 	if err != nil {
@@ -127,15 +127,15 @@ func (c *UserController) Withdraw(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	err := c.userService.Withdraw(r.Context(), withdrawal)
-	switch err {
-	case nil:
-		break
-	case models.ErrInsufficientBalance:
-		c.HandleError(w, r, err, http.StatusBadRequest)
-		return
-	default:
-		c.HandleError(w, r, err, http.StatusInternalServerError)
-		return
+	if err != nil {
+		switch err {
+		case models.ErrInsufficientBalance:
+			c.HandleError(w, r, err, http.StatusBadRequest)
+			return
+		default:
+			c.HandleError(w, r, err, http.StatusInternalServerError)
+			return
+		}
 	}
 	w.WriteHeader(http.StatusOK)
 }
