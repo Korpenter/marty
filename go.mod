@@ -10,8 +10,8 @@ require (
 	github.com/jackc/pgx/v5 v5.1.1
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/lestrrat-go/jwx/v2 v2.0.6
+	github.com/pkg/errors v0.8.1
 	github.com/samber/do v1.4.1
-	github.com/sarulabs/di/v2 v2.4.2
 	github.com/shopspring/decimal v1.3.1
 	go.uber.org/zap v1.23.0
 	golang.org/x/crypto v0.0.0-20220829220503-c86fa9a7ed90
