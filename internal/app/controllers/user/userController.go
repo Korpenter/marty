@@ -2,7 +2,6 @@ package user
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/Mldlr/marty/internal/app/models"
 	"github.com/Mldlr/marty/internal/app/service/user"
 	"github.com/Mldlr/marty/internal/app/util/validators"
@@ -123,7 +122,7 @@ func (c *UserController) Withdraw(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 	withdrawal.Login = r.Context().Value(models.LoginKey{}).(string)
 	if !validators.Luhn(withdrawal.OrderID) {
-		c.HandleError(w, r, fmt.Errorf("invalid order ID"), http.StatusUnprocessableEntity)
+		c.HandleError(w, r, models.ErrInvalidOrderID, http.StatusUnprocessableEntity)
 		return
 	}
 	err := c.userService.Withdraw(r.Context(), withdrawal)

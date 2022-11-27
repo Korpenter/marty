@@ -1,19 +1,16 @@
 package validators
 
 import (
-	"fmt"
 	"github.com/Mldlr/marty/internal/app/models"
+	"github.com/pkg/errors"
 )
 
 func ValidateAuthorization(user *models.Authorization) error {
-	if user == nil {
-		return fmt.Errorf("no data provided")
-	}
 	if user.Login == "" {
-		return fmt.Errorf("empty login")
+		return errors.Wrap(models.ErrDataValidation, "empty login")
 	}
 	if user.Password == "" {
-		return fmt.Errorf("empty password")
+		return errors.Wrap(models.ErrDataValidation, "empty password")
 	}
 	return nil
 }
