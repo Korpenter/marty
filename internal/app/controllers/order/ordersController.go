@@ -52,18 +52,18 @@ func (c *OrderController) AddOrder(w http.ResponseWriter, r *http.Request) {
 		OrderID: orderID,
 	}
 	err = c.orderService.AddOrder(r.Context(), &o)
-	switch err {
-	case nil:
-		break
-	case models2.ErrOrderAlreadyAdded:
-		c.HandleError(w, r, err, http.StatusConflict)
-		return
-	case models2.ErrOrderAlreadyAddedByUser:
-		c.HandleError(w, r, err, http.StatusOK)
-		return
-	default:
-		c.HandleError(w, r, err, http.StatusInternalServerError)
-		return
+	if err != nil {
+		switch err {
+		case models2.ErrOrderAlreadyAdded:
+			c.HandleError(w, r, err, http.StatusConflict)
+			return
+		case models2.ErrOrderAlreadyAddedByUser:
+			c.HandleError(w, r, err, http.StatusOK)
+			return
+		default:
+			c.HandleError(w, r, err, http.StatusInternalServerError)
+			return
+		}
 	}
 	c.orderService.GetAccrual(&o)
 	w.WriteHeader(http.StatusAccepted)

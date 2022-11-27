@@ -8,7 +8,7 @@ import (
 
 type Config struct {
 	ServiceAddress string `envconfig:"RUN_ADDRESS" default:"localhost:8081"`
-	PostgresURI    string `envconfig:"DATABASE_URI" default:"postgresql://postgres:Gdovich6@localhost:5432/mart"`
+	PostgresURI    string `envconfig:"DATABASE_URI" default:""`
 	AccrualAddress string `envconfig:"ACCRUAL_SYSTEM_ADDRESS" default:"localhost:8080"`
 	SecretKey      string `envconfig:"SECRET_KEY" default:"defaultKeyMARt"`
 }

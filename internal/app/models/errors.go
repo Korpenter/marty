@@ -11,4 +11,8 @@ var (
 	ErrOrderAlreadyAddedByUser = errors.New("order already added by user")
 	ErrInsufficientBalance     = errors.New("insufficient balance")
 	ErrDataValidation          = errors.New("validation constant")
+	ErrAcrrualServerError      = errors.New("accrual server error")
+	ErrTooManyRequests         = errors.New("too many requests")
+	ErrNoContent               = errors.New("no content")
+	ErrDecodingJSON            = errors.New("error decoding json")
 )

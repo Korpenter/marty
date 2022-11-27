@@ -49,21 +49,21 @@ func (c *UserController) Login(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	cred := r.Context().Value(models.CredKey{}).(*models.Authorization)
 	err := c.userService.LogInUser(ctx, cred)
-	switch err {
-	case nil:
-		break
-	case models.ErrWrongPassword:
-		c.HandleError(w, r, err, http.StatusUnauthorized)
-		return
-	case models.ErrUserNotFound:
-		c.HandleError(w, r, err, http.StatusUnauthorized)
-		return
-	case models.ErrDataValidation:
-		c.HandleError(w, r, err, http.StatusBadRequest)
-		return
-	default:
-		c.HandleError(w, r, err, http.StatusInternalServerError)
-		return
+	if err != nil {
+		switch err {
+		case models.ErrWrongPassword:
+			c.HandleError(w, r, err, http.StatusUnauthorized)
+			return
+		case models.ErrUserNotFound:
+			c.HandleError(w, r, err, http.StatusUnauthorized)
+			return
+		case models.ErrDataValidation:
+			c.HandleError(w, r, err, http.StatusBadRequest)
+			return
+		default:
+			c.HandleError(w, r, err, http.StatusInternalServerError)
+			return
+		}
 	}
 	jwtCookie, err := c.userService.BakeJWTCookie(cred.Login)
 	if err != nil {
