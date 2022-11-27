@@ -2,7 +2,7 @@ package middleware
 
 import (
 	"context"
-	"github.com/Mldlr/marty/internal/app/constant"
+	"github.com/Mldlr/marty/internal/app/models"
 	"github.com/go-chi/jwtauth/v5"
 	"github.com/lestrrat-go/jwx/v2/jwt"
 	"net/http"
@@ -21,7 +21,7 @@ func Authenticator(next http.Handler) http.Handler {
 			return
 		}
 
-		req := r.WithContext(context.WithValue(r.Context(), constant.LoginKey, claims["login"].(string)))
+		req := r.WithContext(context.WithValue(r.Context(), models.LoginKey{}, claims["login"].(string)))
 		*r = *req
 
 		next.ServeHTTP(w, r)

@@ -1,40 +1,37 @@
-package service
+package order
 
 import (
 	"context"
 	"encoding/json"
 	"fmt"
 	"github.com/Mldlr/marty/internal/app/config"
-	"github.com/Mldlr/marty/internal/app/constant"
-	"github.com/Mldlr/marty/internal/app/logging"
 	"github.com/Mldlr/marty/internal/app/models"
 	"github.com/Mldlr/marty/internal/app/storage"
+	"github.com/samber/do"
+	"go.uber.org/zap"
 	"net/http"
 	"strconv"
 	"time"
 )
 
-type OrderService interface {
-	GetAccrual(order *models.Order)
-	AddOrder(ctx context.Context, order *models.Order) error
-	GetOrdersByUser(ctx context.Context) ([]models.OrderItem, error)
-	UpdateOrders(ctx context.Context)
-	PollAccrual()
-}
-
 type OrderServiceImpl struct {
 	repo         storage.Repository
 	cfg          *config.Config
+	log          *zap.Logger
 	updateQueue  chan *models.Order
 	accrualQueue chan *models.Order
 	accrual      string
 	Queue        chan *models.Order
 }
 
-func NewOrderService(cfg *config.Config, repo storage.Repository) OrderService {
+func NewOrderService(i *do.Injector) OrderService {
+	cfg := do.MustInvoke[*config.Config](i)
+	repo := do.MustInvoke[storage.Repository](i)
+	log := do.MustInvoke[*zap.Logger](i)
 	return &OrderServiceImpl{
 		repo:         repo,
 		cfg:          cfg,
+		log:          log,
 		updateQueue:  make(chan *models.Order, 1000),
 		accrualQueue: make(chan *models.Order, 1000),
 		accrual:      fmt.Sprintf("%s/api/orders/", cfg.AccrualAddress),
@@ -50,7 +47,7 @@ func (s *OrderServiceImpl) PollAccrual() {
 			continue
 		}
 		if err != nil {
-			logging.Logger.Error("error polling accrual service:" + err.Error())
+			s.log.Error("error polling accrual service:" + err.Error())
 			s.accrualQueue <- order
 			time.Sleep(time.Duration(retryAfter) * time.Second)
 			continue
@@ -59,7 +56,7 @@ func (s *OrderServiceImpl) PollAccrual() {
 			order.Status = gotOrder.Status
 			s.updateQueue <- gotOrder
 		}
-		if order.Status == constant.StatusProcessing || order.Status == constant.StatusRegistered || order.Status == "" {
+		if order.Status == models.StatusProcessing || order.Status == models.StatusRegistered || order.Status == "" {
 			s.accrualQueue <- order
 		}
 	}
@@ -91,7 +88,7 @@ func (s *OrderServiceImpl) getAccrual(order *models.Order) (*models.Order, int, 
 func (s *OrderServiceImpl) AddOrder(ctx context.Context, order *models.Order) error {
 	err := s.repo.AddOrder(ctx, order)
 	if err != nil {
-		logging.Logger.Error(err.Error())
+		s.log.Error(err.Error())
 		return err
 	}
 	return nil
@@ -115,7 +112,7 @@ func (s *OrderServiceImpl) UpdateOrders(ctx context.Context) {
 		err := s.repo.UpdateOrder(ctx, order)
 		if err != nil {
 			s.updateQueue <- order
-			logging.Logger.Error("error updating order :" + err.Error())
+			s.log.Error("error updating order :" + err.Error())
 		}
 	}
 }

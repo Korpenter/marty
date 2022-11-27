@@ -5,7 +5,11 @@ import (
 	"time"
 )
 
-type LoginKey string
+const (
+	StatusRegistered = "REGISTERED"
+	StatusProcessing = "PROCESSING"
+	StatusProcessed  = "PROCESSED"
+)
 
 type Order struct {
 	Login   string
@@ -19,21 +23,4 @@ type OrderItem struct {
 	Status   string           `json:"status"`
 	Accrual  *decimal.Decimal `json:"accrual,omitempty"`
 	Uploaded time.Time        `json:"uploaded_at"`
-}
-
-type Authorization struct {
-	Login    string `json:"login"`
-	Password string `json:"password"`
-}
-
-type Withdrawal struct {
-	Login     string
-	OrderID   string           `json:"order"`
-	Sum       *decimal.Decimal `json:"sum"`
-	Processed time.Time        `json:"processed_at"`
-}
-
-type Balance struct {
-	Current   *decimal.Decimal `json:"current"`
-	Withdrawn *decimal.Decimal `json:"withdrawn"`
 }

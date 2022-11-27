@@ -5,10 +5,12 @@ go 1.19
 require (
 	github.com/go-chi/chi/v5 v5.0.7
 	github.com/go-chi/jwtauth/v5 v5.1.0
+	github.com/go-chi/render v1.0.2
 	github.com/jackc/pgx-shopspring-decimal v0.0.0-20220624020537-1d36b5a1853e
 	github.com/jackc/pgx/v5 v5.1.1
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/lestrrat-go/jwx/v2 v2.0.6
+	github.com/samber/do v1.4.1
 	github.com/sarulabs/di/v2 v2.4.2
 	github.com/shopspring/decimal v1.3.1
 	go.uber.org/zap v1.23.0
@@ -16,6 +18,7 @@ require (
 )
 
 require (
+	github.com/ajg/form v1.5.1 // indirect
 	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.1.0 // indirect
 	github.com/goccy/go-json v0.9.11 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect

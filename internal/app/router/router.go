@@ -2,16 +2,19 @@ package router
 
 import (
 	"github.com/Mldlr/marty/internal/app/config"
-	"github.com/Mldlr/marty/internal/app/container"
-	"github.com/Mldlr/marty/internal/app/router/handlers"
-	"github.com/Mldlr/marty/internal/app/router/middleware"
+	controllers "github.com/Mldlr/marty/internal/app/controllers/order"
+	"github.com/Mldlr/marty/internal/app/controllers/user"
+	middleware2 "github.com/Mldlr/marty/internal/app/middleware"
 	"github.com/go-chi/chi/v5"
 	chiMiddleware "github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/jwtauth/v5"
+	"github.com/samber/do"
 )
 
-func NewRouter() chi.Router {
-	cfg := container.Container.Get("cfg").(*config.Config)
+func NewRouter(i *do.Injector) chi.Router {
+	orderController := do.MustInvoke[*controllers.OrderController](i)
+	userController := do.MustInvoke[*user.UserController](i)
+	cfg := do.MustInvoke[*config.Config](i)
 	tokenAuth := jwtauth.New("HS256", []byte(cfg.SecretKey), nil)
 
 	r := chi.NewRouter()
@@ -19,28 +22,28 @@ func NewRouter() chi.Router {
 	r.Use(chiMiddleware.Recoverer)
 	r.Use(chiMiddleware.AllowContentEncoding("gzip"))
 	r.Use(chiMiddleware.Compress(5, "application/json", "text/plain"))
-	r.Use(middleware.Decompress)
+	r.Use(middleware2.Decompress)
 	r.Group(func(r chi.Router) {
 		r.Use(chiMiddleware.AllowContentType("application/json"))
-		r.Use(middleware.Unauthorized)
-		r.Post("/api/user/register", handlers.Register)
-		r.Post("/api/user/login", handlers.Login)
+		r.Use(middleware2.Unauthorized)
+		r.Post("/api/user/register", userController.Register)
+		r.Post("/api/user/login", userController.Login)
 	})
 	r.Group(func(r chi.Router) {
 		r.Use(jwtauth.Verifier(tokenAuth))
-		r.Use(middleware.Authenticator)
-		r.Get("/api/user/orders", handlers.UserOrders)
-		r.Get("/api/user/balance", handlers.UserBalance)
-		r.Get("/api/user/withdrawals", handlers.UserWithdrawals)
+		r.Use(middleware2.Authenticator)
+		r.Get("/api/user/orders", orderController.OrdersByUser)
+		r.Get("/api/user/balance", userController.Balance)
+		r.Get("/api/user/withdrawals", userController.UserWithdrawals)
 
 		r.Group(func(r chi.Router) {
 			r.Use(chiMiddleware.AllowContentType("text/plain"))
-			r.Post("/api/user/orders", handlers.AddOrder)
+			r.Post("/api/user/orders", orderController.AddOrder)
 		})
 
 		r.Group(func(r chi.Router) {
 			r.Use(chiMiddleware.AllowContentType("application/json"))
-			r.Post("/api/user/balance/withdraw", handlers.UserWithdraw)
+			r.Post("/api/user/balance/withdraw", userController.Withdraw)
 		})
 	})
 	return r
