@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	models2 "github.com/Mldlr/marty/internal/app/models"
+	"github.com/Mldlr/marty/internal/app/models"
 	pgxdecimal "github.com/jackc/pgx-shopspring-decimal"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -52,7 +52,7 @@ func (r *PostgresRepo) NewTables() error {
 	return nil
 }
 
-func (r *PostgresRepo) CreateUser(ctx context.Context, user *models2.Authorization) error {
+func (r *PostgresRepo) CreateUser(ctx context.Context, user *models.Authorization) error {
 	tx, err := r.conn.Begin(ctx)
 	if err != nil {
 		return err
@@ -69,7 +69,7 @@ func (r *PostgresRepo) CreateUser(ctx context.Context, user *models2.Authorizati
 		return err
 	}
 	if commandTag.RowsAffected() != 1 {
-		return models2.ErrUserExists
+		return models.ErrUserExists
 	}
 	return nil
 }
@@ -78,14 +78,14 @@ func (r *PostgresRepo) GetHashedPasswordByLogin(ctx context.Context, login strin
 	err := r.conn.QueryRow(ctx, getHashByLogin, login).Scan(&hash)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return "", models2.ErrUserNotFound
+			return "", models.ErrUserNotFound
 		}
 		return "", err
 	}
 	return hash, nil
 }
 
-func (r *PostgresRepo) AddOrder(ctx context.Context, order *models2.Order) error {
+func (r *PostgresRepo) AddOrder(ctx context.Context, order *models.Order) error {
 	tx, err := r.conn.Begin(ctx)
 	if err != nil {
 		return err
@@ -108,17 +108,17 @@ func (r *PostgresRepo) AddOrder(ctx context.Context, order *models2.Order) error
 			return err
 		}
 		if returnLogin != order.Login {
-			return models2.ErrOrderAlreadyAdded
+			return models.ErrOrderAlreadyAdded
 		}
-		return models2.ErrOrderAlreadyAddedByUser
+		return models.ErrOrderAlreadyAddedByUser
 	}
 	return nil
 }
 
-func (r *PostgresRepo) GetOrdersByUser(ctx context.Context) ([]models2.OrderItem, error) {
-	var order models2.OrderItem
-	orders := make([]models2.OrderItem, 0)
-	rows, err := r.conn.Query(ctx, getOrdersByUser, ctx.Value(models2.LoginKey{}).(string))
+func (r *PostgresRepo) GetOrdersByUser(ctx context.Context) ([]models.OrderItem, error) {
+	var order models.OrderItem
+	orders := make([]models.OrderItem, 0)
+	rows, err := r.conn.Query(ctx, getOrdersByUser, ctx.Value(models.LoginKey{}).(string))
 	if err != nil {
 		return nil, err
 	}
@@ -139,9 +139,9 @@ func (r *PostgresRepo) GetOrdersByUser(ctx context.Context) ([]models2.OrderItem
 	return orders, nil
 }
 
-func (r *PostgresRepo) GetBalance(ctx context.Context) (*models2.Balance, error) {
-	var balance models2.Balance
-	err := r.conn.QueryRow(ctx, getUserBalance, ctx.Value(models2.LoginKey{}).(string)).Scan(&balance.Current, &balance.Withdrawn)
+func (r *PostgresRepo) GetBalance(ctx context.Context) (*models.Balance, error) {
+	var balance models.Balance
+	err := r.conn.QueryRow(ctx, getUserBalance, ctx.Value(models.LoginKey{}).(string)).Scan(&balance.Current, &balance.Withdrawn)
 	if err != nil {
 		log.Println(err)
 		return nil, err
@@ -149,10 +149,10 @@ func (r *PostgresRepo) GetBalance(ctx context.Context) (*models2.Balance, error)
 	return &balance, nil
 }
 
-func (r *PostgresRepo) GetWithdrawals(ctx context.Context) ([]models2.Withdrawal, error) {
-	var withdrawal models2.Withdrawal
-	withdrawals := make([]models2.Withdrawal, 0)
-	rows, err := r.conn.Query(ctx, getUserWithdrawals, ctx.Value(models2.LoginKey{}).(string))
+func (r *PostgresRepo) GetWithdrawals(ctx context.Context) ([]models.Withdrawal, error) {
+	var withdrawal models.Withdrawal
+	withdrawals := make([]models.Withdrawal, 0)
+	rows, err := r.conn.Query(ctx, getUserWithdrawals, ctx.Value(models.LoginKey{}).(string))
 	if err != nil {
 		return nil, err
 	}
@@ -170,7 +170,7 @@ func (r *PostgresRepo) GetWithdrawals(ctx context.Context) ([]models2.Withdrawal
 	return withdrawals, nil
 }
 
-func (r *PostgresRepo) Withdraw(ctx context.Context, withdrawal *models2.Withdrawal) error {
+func (r *PostgresRepo) Withdraw(ctx context.Context, withdrawal *models.Withdrawal) error {
 	tx, err := r.conn.Begin(ctx)
 	if err != nil {
 		return err
@@ -187,7 +187,7 @@ func (r *PostgresRepo) Withdraw(ctx context.Context, withdrawal *models2.Withdra
 		return err
 	}
 	if commandTag.RowsAffected() != 1 {
-		return models2.ErrInsufficientBalance
+		return models.ErrInsufficientBalance
 	}
 	_, err = tx.Exec(ctx, userWithdraw, withdrawal.OrderID, withdrawal.Sum, withdrawal.Login)
 	if err != nil {
@@ -196,7 +196,7 @@ func (r *PostgresRepo) Withdraw(ctx context.Context, withdrawal *models2.Withdra
 	return nil
 }
 
-func (r *PostgresRepo) UpdateOrder(ctx context.Context, order *models2.Order) error {
+func (r *PostgresRepo) UpdateOrder(ctx context.Context, order *models.Order) error {
 	tx, err := r.conn.Begin(ctx)
 	if err != nil {
 		return err
@@ -208,7 +208,7 @@ func (r *PostgresRepo) UpdateOrder(ctx context.Context, order *models2.Order) er
 			tx.Commit(ctx)
 		}
 	}()
-	if order.Status == models2.StatusProcessed {
+	if order.Status == models.StatusProcessed {
 		err = tx.QueryRow(ctx, updateProcessedOrder, order.Status, order.Accrual, order.OrderID).Scan(&order.Login)
 		if err != nil {
 			return err

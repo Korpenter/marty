@@ -3,7 +3,7 @@ package user
 import (
 	"encoding/json"
 	"fmt"
-	models2 "github.com/Mldlr/marty/internal/app/models"
+	"github.com/Mldlr/marty/internal/app/models"
 	"github.com/Mldlr/marty/internal/app/service/user"
 	"github.com/Mldlr/marty/internal/app/util/validators"
 	"github.com/go-chi/render"
@@ -33,7 +33,6 @@ func (c *UserController) HandleError(w http.ResponseWriter, r *http.Request, err
 		zap.Error(err),
 	)
 	http.Error(w, err.Error(), code)
-	return
 }
 
 func (c *UserController) Balance(w http.ResponseWriter, r *http.Request) {
@@ -48,18 +47,18 @@ func (c *UserController) Balance(w http.ResponseWriter, r *http.Request) {
 
 func (c *UserController) Login(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	cred := r.Context().Value(models2.CredKey{}).(*models2.Authorization)
+	cred := r.Context().Value(models.CredKey{}).(*models.Authorization)
 	err := c.userService.LogInUser(ctx, cred)
 	switch err {
 	case nil:
 		break
-	case models2.ErrWrongPassword:
+	case models.ErrWrongPassword:
 		c.HandleError(w, r, err, http.StatusUnauthorized)
 		return
-	case models2.ErrUserNotFound:
+	case models.ErrUserNotFound:
 		c.HandleError(w, r, err, http.StatusUnauthorized)
 		return
-	case models2.ErrDataValidation:
+	case models.ErrDataValidation:
 		c.HandleError(w, r, err, http.StatusBadRequest)
 		return
 	default:
@@ -77,15 +76,15 @@ func (c *UserController) Login(w http.ResponseWriter, r *http.Request) {
 
 func (c *UserController) Register(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	cred := r.Context().Value(models2.CredKey{}).(*models2.Authorization)
+	cred := r.Context().Value(models.CredKey{}).(*models.Authorization)
 	err := c.userService.CreateUser(ctx, cred)
 	switch err {
 	case nil:
 		break
-	case models2.ErrUserExists:
+	case models.ErrUserExists:
 		c.HandleError(w, r, err, http.StatusConflict)
 		return
-	case models2.ErrDataValidation:
+	case models.ErrDataValidation:
 		c.HandleError(w, r, err, http.StatusBadRequest)
 		return
 	default:
@@ -116,13 +115,13 @@ func (c *UserController) UserWithdrawals(w http.ResponseWriter, r *http.Request)
 }
 
 func (c *UserController) Withdraw(w http.ResponseWriter, r *http.Request) {
-	var withdrawal *models2.Withdrawal
+	var withdrawal *models.Withdrawal
 	if err := json.NewDecoder(r.Body).Decode(&withdrawal); err != nil {
 		c.HandleError(w, r, err, http.StatusBadRequest)
 		return
 	}
 	defer r.Body.Close()
-	withdrawal.Login = r.Context().Value(models2.LoginKey{}).(string)
+	withdrawal.Login = r.Context().Value(models.LoginKey{}).(string)
 	if !validators.Luhn(withdrawal.OrderID) {
 		c.HandleError(w, r, fmt.Errorf("invalid order ID"), http.StatusUnprocessableEntity)
 		return
@@ -131,7 +130,7 @@ func (c *UserController) Withdraw(w http.ResponseWriter, r *http.Request) {
 	switch err {
 	case nil:
 		break
-	case models2.ErrInsufficientBalance:
+	case models.ErrInsufficientBalance:
 		c.HandleError(w, r, err, http.StatusBadRequest)
 		return
 	default:

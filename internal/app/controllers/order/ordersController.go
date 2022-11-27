@@ -33,7 +33,6 @@ func (c *OrderController) HandleError(w http.ResponseWriter, r *http.Request, er
 		zap.Error(err),
 	)
 	http.Error(w, err.Error(), code)
-	return
 }
 
 func (c *OrderController) AddOrder(w http.ResponseWriter, r *http.Request) {
@@ -45,7 +44,7 @@ func (c *OrderController) AddOrder(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 	orderID := string(b)
 	if !validators.Luhn(orderID) {
-		c.HandleError(w, r, fmt.Errorf("Invalid ID"), http.StatusUnprocessableEntity)
+		c.HandleError(w, r, fmt.Errorf("invalid ID"), http.StatusUnprocessableEntity)
 		return
 	}
 	o := models2.Order{
