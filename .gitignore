@@ -19,5 +19,6 @@ cmd/gophermart/gophermart
 vendor/
 
 # IDEs directories
-.idea
+../.idea
 .vscode
+.idea/
