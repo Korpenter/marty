@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/Mldlr/marty/internal/app/models"
+	"github.com/Mldlr/marty/internal/app/util/helpers"
 	pgxdecimal "github.com/jackc/pgx-shopspring-decimal"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -57,13 +58,7 @@ func (r *PostgresRepo) CreateUser(ctx context.Context, user *models.Authorizatio
 	if err != nil {
 		return err
 	}
-	defer func() {
-		if err != nil {
-			tx.Rollback(ctx)
-		} else {
-			tx.Commit(ctx)
-		}
-	}()
+	defer helpers.CommitTx(ctx, tx, err)
 	commandTag, err := tx.Exec(ctx, createUser, user.Login, user.Password)
 	if err != nil {
 		return err
@@ -90,13 +85,7 @@ func (r *PostgresRepo) AddOrder(ctx context.Context, order *models.Order) error 
 	if err != nil {
 		return err
 	}
-	defer func() {
-		if err != nil {
-			tx.Rollback(ctx)
-		} else {
-			tx.Commit(ctx)
-		}
-	}()
+	defer helpers.CommitTx(ctx, tx, err)
 	commandTag, err := tx.Exec(ctx, addOrder, order.OrderID, order.Login)
 	if err != nil {
 		return err
@@ -175,13 +164,7 @@ func (r *PostgresRepo) Withdraw(ctx context.Context, withdrawal *models.Withdraw
 	if err != nil {
 		return err
 	}
-	defer func() {
-		if err != nil {
-			tx.Rollback(ctx)
-		} else {
-			tx.Commit(ctx)
-		}
-	}()
+	defer helpers.CommitTx(ctx, tx, err)
 	commandTag, err := tx.Exec(ctx, userVerifyBalance, withdrawal.Sum, withdrawal.Login)
 	if err != nil {
 		return err
@@ -201,13 +184,7 @@ func (r *PostgresRepo) UpdateOrder(ctx context.Context, order *models.Order) err
 	if err != nil {
 		return err
 	}
-	defer func() {
-		if err != nil {
-			tx.Rollback(ctx)
-		} else {
-			tx.Commit(ctx)
-		}
-	}()
+	defer helpers.CommitTx(ctx, tx, err)
 	if order.Status == models.StatusProcessed {
 		err = tx.QueryRow(ctx, updateProcessedOrder, order.Status, order.Accrual, order.OrderID).Scan(&order.Login)
 		if err != nil {
