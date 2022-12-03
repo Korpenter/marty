@@ -46,7 +46,7 @@ func (c *UserController) Balance(w http.ResponseWriter, r *http.Request) {
 
 func (c *UserController) Login(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	cred := r.Context().Value(models.CredKey{}).(*models.Authorization)
+	cred := ctx.Value(models.CredKey{}).(*models.Authorization)
 	err := c.userService.LogInUser(ctx, cred)
 	if err != nil {
 		switch err {
@@ -75,7 +75,7 @@ func (c *UserController) Login(w http.ResponseWriter, r *http.Request) {
 
 func (c *UserController) Register(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	cred := r.Context().Value(models.CredKey{}).(*models.Authorization)
+	cred := ctx.Value(models.CredKey{}).(*models.Authorization)
 	err := c.userService.CreateUser(ctx, cred)
 	if err != nil {
 		switch err {
@@ -115,17 +115,18 @@ func (c *UserController) UserWithdrawals(w http.ResponseWriter, r *http.Request)
 
 func (c *UserController) Withdraw(w http.ResponseWriter, r *http.Request) {
 	var withdrawal *models.Withdrawal
+	ctx := r.Context()
 	if err := json.NewDecoder(r.Body).Decode(&withdrawal); err != nil {
 		c.HandleError(w, r, err, http.StatusBadRequest)
 		return
 	}
 	defer r.Body.Close()
-	withdrawal.Login = r.Context().Value(models.LoginKey{}).(string)
+	withdrawal.Login = ctx.Value(models.LoginKey{}).(string)
 	if !validators.Luhn(withdrawal.OrderID) {
 		c.HandleError(w, r, models.ErrInvalidOrderID, http.StatusUnprocessableEntity)
 		return
 	}
-	err := c.userService.Withdraw(r.Context(), withdrawal)
+	err := c.userService.Withdraw(ctx, withdrawal)
 	if err != nil {
 		switch err {
 		case models.ErrInsufficientBalance:
@@ -136,5 +137,5 @@ func (c *UserController) Withdraw(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-	w.WriteHeader(http.StatusOK)
+	render.Status(r, http.StatusOK)
 }

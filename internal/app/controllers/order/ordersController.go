@@ -66,7 +66,7 @@ func (c *OrderController) AddOrder(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	c.orderService.GetAccrual(&o)
-	w.WriteHeader(http.StatusAccepted)
+	render.Status(r, http.StatusAccepted)
 }
 
 func (c *OrderController) OrdersByUser(w http.ResponseWriter, r *http.Request) {

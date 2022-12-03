@@ -4,7 +4,7 @@ import (
 	"github.com/Mldlr/marty/internal/app/config"
 	controllers "github.com/Mldlr/marty/internal/app/controllers/order"
 	"github.com/Mldlr/marty/internal/app/controllers/user"
-	middleware2 "github.com/Mldlr/marty/internal/app/middleware"
+	"github.com/Mldlr/marty/internal/app/middleware"
 	"github.com/go-chi/chi/v5"
 	chiMiddleware "github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/jwtauth/v5"
@@ -22,16 +22,16 @@ func NewRouter(i *do.Injector) chi.Router {
 	r.Use(chiMiddleware.Recoverer)
 	r.Use(chiMiddleware.AllowContentEncoding("gzip"))
 	r.Use(chiMiddleware.Compress(5, "application/json", "text/plain"))
-	r.Use(middleware2.Decompress)
+	r.Use(middleware.Decompress)
 	r.Group(func(r chi.Router) {
 		r.Use(chiMiddleware.AllowContentType("application/json"))
-		r.Use(middleware2.Unauthorized)
+		r.Use(middleware.Unauthorized)
 		r.Post("/api/user/register", userController.Register)
 		r.Post("/api/user/login", userController.Login)
 	})
 	r.Group(func(r chi.Router) {
 		r.Use(jwtauth.Verifier(tokenAuth))
-		r.Use(middleware2.Authenticator)
+		r.Use(middleware.Authenticator)
 		r.Get("/api/user/orders", orderController.OrdersByUser)
 		r.Get("/api/user/balance", userController.Balance)
 		r.Get("/api/user/withdrawals", userController.UserWithdrawals)

@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-func Luhn(luhnString string) (ok bool) {
+func Luhn(luhnString string) bool {
 	checksumMod := calculateChecksum(luhnString, false) % 10
 
 	return checksumMod == 0
